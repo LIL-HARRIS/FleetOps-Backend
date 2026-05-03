@@ -29,33 +29,70 @@ class AuditLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // TODO: Search and filter audit logs
-        // 1. Validate filters: user_id, entity_type, action, date_from, date_to
-        // 2. $logs = $this->auditService->searchLogs($request->all())
-        // 3. Return paginated logs
-    }
+        try {
+            // استقبال كل الفلاتر اللي في الشاشة
+            $filters = $request->only([
+                'user_id',
+                'entity_type',
+                'action',
+                'date_from',
+                'date_to',
+                'search'
+            ]);
+            $perPage = (int) $request->get('per_page', 15);
 
+            $logs = $this->auditService->searchLogs($filters, $perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $logs
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * سجل مراجعة كيان معين
      * GET /api/v1/audit/entity/{entityType}/{entityId}
      */
-    public function entityTrail(string $entityType, int $entityId): JsonResponse
+    public function entityTrail(string $entityType, int $entityId, Request $request): JsonResponse
     {
-        // TODO: return audit trail for specific entity
-        // $trail = $this->auditService->getEntityAuditTrail($entityType, $entityId)
-        // return response with audit trail
+        try {
+            $perPage = (int) $request->get('per_page', 20);
+            $trail = $this->auditService->getEntityAuditTrail($entityType, $entityId, $perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $trail
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
-     * تصدير سجلات المراجعة
+     * تصدير سجلات المراجعة إلى CSV
      * GET /api/v1/audit/logs/export
      */
-    public function export(Request $request): JsonResponse
+    public function export(Request $request)
     {
-        // TODO: Export audit logs as CSV
-        // 1. Validate filters and format
-        // 2. Query filtered logs
-        // 3. Generate CSV/Excel file
-        // 4. Return download response
+        // نجلب السجلات (بدون Pagination لغرض التصدير - كحد أقصى 1000 سجل)
+        $filters = $request->only(['user_id', 'entity_type', 'action', 'date_from', 'date_to']);
+        $logs = $this->auditService->searchLogs($filters, 1000);
+
+        // إنشاء محتوى CSV مبسط
+        $csvData = "Log ID,User ID,Action,Entity Type,Entity ID,Date\n";
+        foreach ($logs as $log) {
+            $csvData .= "{$log->audit_id},{$log->user_id},{$log->action},{$log->entity_type},{$log->entity_id},{$log->created_at}\n";
+        }
+
+        // إرجاع الملف كتحميل
+        return response($csvData)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="audit_logs.csv"');
     }
 }

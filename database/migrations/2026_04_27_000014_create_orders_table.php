@@ -1,12 +1,8 @@
 <?php
 
 /**
- * Migration: create_orders_table
+ * Migration: create_orders_table (Updated to match new DDL)
  * DDL Source: FleetOpsDB.dbo.[Order]
- * Execution Tier: 3 — FK → customers, drivers
- *
- * NOTE: OrderID in DDL is bigint NOT NULL (no IDENTITY). IDs may be assigned externally.
- * NOTE: [DriverID(FK)] and [CustomerID(FK)] column names were normalized to driver_id / customer_id.
  *
  * @author Team Leader (Khalid)
  */
@@ -18,55 +14,54 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
-            // DDL: OrderID bigint NOT NULL — PK (no IDENTITY, externally assigned)
-            $table->unsignedBigInteger('order_id');
-            $table->primary('order_id');
+        Schema::create('order', function (Blueprint $table) {
+            $table->bigInteger('OrderID')->primary();
+            
+            $table->bigInteger('DriverID(FK)')->nullable();
+            $table->bigInteger('CustomerID(FK)')->nullable();
+            $table->bigInteger('vehicle_id(FK)')->nullable();
+            $table->bigInteger('TransactionID(FK)')->nullable();
+            
+            $table->string('Status', 50)->nullable();
+            $table->char('ETA', 10)->nullable();
+            $table->dateTime('PromisedWindow', 7)->nullable();
+            $table->integer('Priority')->nullable(); // 0 to 100
+            $table->string('Type', 50)->default('Normal'); // Normal, Express, Low
+            $table->integer('Price');
+            $table->char('digital_signature', 10)->nullable();
+            $table->string('Delivery_preference', 255)->nullable();
+            $table->string('Payment_method', 50)->nullable();
+            $table->dateTime('Created_at', 7)->nullable();
+            $table->dateTime('UpdatedAt', 7)->nullable();
+            $table->boolean('Perishable');
+            $table->dateTime('DeliveredAt', 7)->nullable();
+            $table->integer('Weight')->nullable();
+            $table->integer('Volume')->nullable();
+            $table->string('LiveTrackingLink', 255)->nullable();
+            $table->decimal('DeliveryTimeWindow', 12, 2)->nullable();
+            $table->decimal('Longitude', 11, 8)->nullable();
+            $table->decimal('Latitude', 10, 8)->nullable();
+            $table->string('Area', 255)->nullable();
 
-            // DDL: [DriverID(FK)] bigint NULL — normalized to driver_id
-            $table->unsignedBigInteger('driver_id')->nullable();
-
-            // DDL: [CustomerID(FK)] bigint NULL — normalized to customer_id
-            $table->unsignedBigInteger('customer_id')->nullable();
-
-            // DDL: Status nvarchar(50) NULL — CK_Orders (Pending|Assigned|InProgress|Cancelled)
-            $table->enum('status', ['Pending', 'Assigned', 'InProgress', 'Cancelled'])->nullable();
-
-            // DDL: ETA nchar(10) NULL
-            $table->string('eta', 10)->nullable();
-
-            // DDL: Delivery_Time datetime2 NULL
-            $table->dateTime('delivery_time')->nullable();
-
-            // DDL: Priority nvarchar(50) NULL
-            $table->string('priority', 50)->nullable();
-
-            // DDL: Price int NOT NULL
-            $table->integer('price');
-
-            // DDL: digital_signature nchar(10) NULL
-            $table->string('digital_signature', 10)->nullable();
-
-            // DDL: Delivery_preference nvarchar(255) NULL
-            $table->string('delivery_preference', 255)->nullable();
-
-            // DDL: Payment_method nvarchar(50) NULL
-            $table->string('payment_method', 50)->nullable();
-
-            // DDL: Created_at datetime2 NULL (no UpdatedAt in DDL)
-            $table->dateTime('created_at')->nullable();
-
-            // FK_Orders_Customers → customers.customer_id
-            // تم التغيير لـ noActionOnDelete لتجنب مشاكل SQL Server مع الـ Cascade Paths
-            $table->foreign('customer_id')->references('customer_id')->on('customers')->noActionOnDelete();
-
-            // FK_Orders_Drivers → drivers.driver_id
-            $table->foreign('driver_id')->references('driver_id')->on('drivers')->noActionOnDelete();
+            // Foreign Keys (TransactionID FK will be added in a later migration)
+            $table->foreign('vehicle_id(FK)', 'FK_Order_Vehicle')
+                  ->references('vehicle_id')->on('vehicles')->noActionOnDelete();
+                  
+            $table->foreign('CustomerID(FK)', 'FK_Orders_Customers')
+                  ->references('customer_id')->on('customers')->noActionOnDelete();
+                  
+            $table->foreign('DriverID(FK)', 'FK_Orders_Drivers')
+                  ->references('driver_id')->on('drivers')->noActionOnDelete();
         });
+
+        // Add check constraints
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE [order] ADD CONSTRAINT [CK_Orders_Status] CHECK ([Status] IN ('Pending', 'Assigned', 'InTransit', 'Out for Delivery', 'Delivered', 'Failed', 'Returned'))");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE [order] ADD CONSTRAINT [CK_Orders_Type] CHECK ([Type] IN ('Normal', 'Express', 'Low'))");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE [order] ADD CONSTRAINT [CK_Orders_Priority] CHECK ([Priority] >= 0 AND [Priority] <= 100)");
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('order');
     }
 };

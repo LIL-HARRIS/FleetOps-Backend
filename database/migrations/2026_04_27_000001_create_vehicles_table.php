@@ -16,31 +16,38 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('vehicles', function (Blueprint $table) {
-            // DDL: VehicleID bigint IDENTITY(1,1) — PK
+            // DDL: vehicle_id bigint IDENTITY(1,1) — PK
             $table->bigIncrements('vehicle_id');
 
-            // DDL: VehicleBrand nvarchar(100) NOT NULL
-            $table->string('vehicle_brand', 100);
+            // DDL: VehicleModel nvarchar(100) NOT NULL
+            $table->string('VehicleModel', 100);
+
+            // DDL: VehicleType nvarchar(20) NOT NULL CHECK (light|heavy|refrigerated)
+            $table->string('VehicleType', 20);
 
             // DDL: VehicleLicense nvarchar(50) NOT NULL UNIQUE
-            $table->string('vehicle_license', 50)->unique();
+            $table->string('VehicleLicense', 50)->unique();
 
             // DDL: MaxWeightCapacity decimal(10,2) NULL
-            $table->decimal('max_weight_capacity', 10, 2)->nullable();
-
-            // DDL: FuelType nvarchar(30) NULL
-            $table->string('fuel_type', 30)->nullable();
+            $table->decimal('MaxWeightCapacity', 10, 2)->nullable();
 
             // DDL: Status nvarchar(30) DEFAULT 'Active' CHECK (Active|Maintenance|Inactive|OutOfService)
-            $table->enum('status', ['Active', 'Maintenance', 'Inactive', 'OutOfService'])
-                  ->default('Active')
-                  ->nullable();
+            $table->string('Status', 30)->nullable()->default('Active');
 
             // DDL: Current_odometer decimal(12,2) NOT NULL CHECK >= 0
-            $table->decimal('current_odometer', 12, 2)->default(0);
+            $table->decimal('Current_odometer', 12, 2);
 
-            // DDL: CreatedAt datetime2 DEFAULT getdate() NULL (no UpdatedAt in DDL)
-            $table->dateTime('created_at')->nullable();
+            // DDL: MaxVolume decimal(10,2) NULL
+            $table->decimal('MaxVolume', 10, 2)->nullable();
+
+            // DDL: MarketValue int NULL
+            $table->integer('MarketValue')->nullable();
+
+            // DDL: CreatedAt datetime2 DEFAULT getdate() NULL
+            $table->dateTime('CreatedAt')->nullable()->useCurrent();
+
+            // DDL: UpdatedAt datetime2 NULL
+            $table->dateTime('UpdatedAt')->nullable();
         });
     }
 

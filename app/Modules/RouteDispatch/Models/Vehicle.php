@@ -27,38 +27,50 @@ class Vehicle extends Model
     protected $keyType    = 'int';
     public $incrementing  = true;
 
-    // DDL has CreatedAt only (no UpdatedAt)
-    const UPDATED_AT = null;
-    const CREATED_AT = 'created_at';
+    // DDL timestamp columns
+    const UPDATED_AT = 'UpdatedAt';
+    const CREATED_AT = 'CreatedAt';
 
     /** @var array<string> */
     protected $fillable = [
-        'vehicle_brand',
-        'vehicle_license',
-        'max_weight_capacity',
-        'fuel_type',
-        'status',
-        'current_odometer',
-        'created_at',
+        'VehicleModel',
+        'VehicleType',
+        'VehicleLicense',
+        'MaxWeightCapacity',
+        'Status',
+        'Current_odometer',
+        'MaxVolume',
+        'MarketValue',
+        'CreatedAt',
+        'UpdatedAt',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
-        'max_weight_capacity' => 'float',
-        'current_odometer'    => 'float',
-        'created_at'          => 'datetime',
+        'VehicleType'       => 'string',
+        'MaxWeightCapacity' => 'decimal:2',
+        'Current_odometer'  => 'decimal:2',
+        'MaxVolume'         => 'decimal:2',
+        'MarketValue'       => 'integer',
+        'CreatedAt'         => 'datetime',
+        'UpdatedAt'         => 'datetime',
     ];
 
     // ─── Scopes ───────────────────────────────────────────────────────────────
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'Active');
+        return $query->where('Status', 'Active');
+    }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where('Status', 'Active');
     }
 
     public function scopeInMaintenance($query)
     {
-        return $query->where('status', 'Maintenance');
+        return $query->where('Status', 'Maintenance');
     }
 
     // ─── Relationships ────────────────────────────────────────────────────────

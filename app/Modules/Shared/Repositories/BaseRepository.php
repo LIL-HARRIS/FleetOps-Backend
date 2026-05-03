@@ -101,11 +101,11 @@ abstract class BaseRepository
     public function findAllBy(array $conditions)
     {
         $query = $this->model;
-        
+
         foreach ($conditions as $column => $value) {
             $query = $query->where($column, $value);
         }
-        
+
         return $query->get();
     }
 
@@ -128,11 +128,11 @@ abstract class BaseRepository
     public function update($id, array $data): bool
     {
         $model = $this->findById($id);
-        
+
         if (!$model) {
             return false;
         }
-        
+
         return $model->update($data);
     }
 
@@ -144,11 +144,11 @@ abstract class BaseRepository
     public function delete($id): bool
     {
         $model = $this->findById($id);
-        
+
         if (!$model) {
             return false;
         }
-        
+
         return $model->delete();
     }
 
@@ -168,24 +168,24 @@ abstract class BaseRepository
      * @param array $sorts
      * @return Builder
      */
-    public function search(array $filters = [], array $sorts = []): Builder
+    public function search(array $filters = [], array $sorts = []): \Illuminate\Database\Eloquent\Builder
     {
-        $query = $this->model;
+        // التعديل الأساسي: نبدأ بـ newQuery لضمان إرجاع Builder
+        $query = $this->model->newQuery();
 
-        // تطبيق الفلاترات
         foreach ($filters as $column => $value) {
             if ($value !== null && $value !== '') {
-                $query = $query->where($column, $value);
+                $query->where($column, $value);
             }
         }
 
-        // تطبيق الترتيب
         foreach ($sorts as $column => $direction) {
-            $query = $query->orderBy($column, $direction);
+            $query->orderBy($column, $direction);
         }
 
         return $query;
     }
+
 
     /**
      * الحصول على عدد السجلات

@@ -47,6 +47,7 @@ class NotificationService
         //    - If SMS fails → try email: dispatch EmailNotificationJob
         //    - If all fail → mark as failed, add to dead-letter queue
         // 6. Return result
+        return [];// ضيفت دي هنا عشان بتعمل عندي كراش على ما يتعملها implentation //Eng-khalid
     }
 
     /**
@@ -59,6 +60,8 @@ class NotificationService
         // TODO: Send proximity alert
         // 1. Build payload: 'سيصل السائق خلال دقائق'
         // 2. Call $this->send($customerId, 'proximity_alert', $payload)
+        return [];// ضيفت دي هنا عشان بتعمل عندي كراش على ما يتعملها implentation //Eng-khalid
+
     }
 
     /**
@@ -71,6 +74,8 @@ class NotificationService
         // TODO: Send delay alert to dispatcher
         // 1. Build payload with order details and new ETA
         // 2. Call $this->send($dispatcherId, 'delay_alert', $payload)
+        return [];// ضيفت دي هنا عشان بتعمل عندي كراش على ما يتعملها implentation //Eng-khalid
+
     }
 
     /**
@@ -83,5 +88,7 @@ class NotificationService
     {
         // TODO: Send maintenance alert
         // Build appropriate payload and call $this->send()
+        return [];// ضيفت دي هنا عشان بتعمل عندي كراش على ما يتعملها implentation //Eng-khalid
+
     }
 }

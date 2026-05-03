@@ -49,10 +49,10 @@ return new class extends Migration
                   ->on('routes')
                   ->cascadeOnDelete();
 
-            // FK → orders.order_id (no cascade in DDL)
+            // FK → Order.OrderID (no cascade in DDL)
             $table->foreign('order_id')
-                  ->references('order_id')
-                  ->on('orders')
+                  ->references('OrderID')
+                  ->on('order')
                   ->nullOnDelete();
         });
     }

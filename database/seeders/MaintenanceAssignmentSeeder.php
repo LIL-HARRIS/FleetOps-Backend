@@ -12,7 +12,7 @@ class MaintenanceAssignmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $vehicles     = DB::table('vehicles')->pluck('vehicle_id', 'vehicle_brand')->toArray();
+        $vehicles     = DB::table('vehicles')->pluck('vehicle_id', 'VehicleModel')->toArray();
         $fleetMgrs    = DB::table('fleet_managers')->pluck('fleet_manager_id')->toArray();
         $mechanics    = DB::table('mechanics')->pluck('mechanic_id')->toArray();
         $parts        = DB::table('inventory')->pluck('part_id', 'part_name')->toArray();

@@ -4,9 +4,9 @@
  * @file Order.php
  * @description Eloquent Model for the orders table — OrderManagement Module
  * @module OrderManagement
- * @table orders
+ * @table Order
  *
- * NOTE: order_id is NOT auto-incremented — IDs are assigned externally per DDL.
+ * NOTE: OrderID is NOT auto-incremented — IDs are assigned externally per DDL.
  *
  * @author Team Leader (Khalid)
  */
@@ -18,42 +18,64 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Modules\AuthIdentity\Models\Customer;
 use App\Modules\AuthIdentity\Models\Driver;
 use App\Modules\RouteDispatch\Models\RouteStop;
+use App\Modules\RouteDispatch\Models\Vehicle;
 use App\Modules\ReportingAnalytics\Models\CashLedger;
 
 class Order extends Model
 {
     use HasFactory;
 
-    protected $table      = 'orders';
-    protected $primaryKey = 'order_id';
+    protected $table      = 'order';
+    protected $primaryKey = 'OrderID';
     protected $keyType    = 'int';
     public $incrementing  = false; // No IDENTITY in DDL — externally assigned
 
-    // DDL has created_at only (no updated_at)
-    const UPDATED_AT = null;
-    const CREATED_AT = 'created_at';
+    const CREATED_AT = 'Created_at';
+    const UPDATED_AT = 'UpdatedAt';
 
     /** @var array<string> */
     protected $fillable = [
-        'order_id',
-        'driver_id',
-        'customer_id',
-        'status',
-        'eta',
-        'delivery_time',
-        'priority',
-        'price',
+        'OrderID',
+        'DriverID(FK)',
+        'CustomerID(FK)',
+        'vehicle_id(FK)',
+        'TransactionID(FK)',
+        'Status',
+        'ETA',
+        'PromisedWindow',
+        'Priority',
+        'Type',
+        'Price',
         'digital_signature',
-        'delivery_preference',
-        'payment_method',
-        'created_at',
+        'Delivery_preference',
+        'Payment_method',
+        'Created_at',
+        'UpdatedAt',
+        'Perishable',
+        'DeliveredAt',
+        'Weight',
+        'Volume',
+        'LiveTrackingLink',
+        'DeliveryTimeWindow',
+        'Longitude',
+        'Latitude',
+        'Area'
     ];
 
     /** @var array<string, string> */
     protected $casts = [
-        'price'         => 'integer',
-        'delivery_time' => 'datetime',
-        'created_at'    => 'datetime',
+        'Priority'           => 'integer',
+        'Price'              => 'integer',
+        'Weight'             => 'integer',
+        'Volume'             => 'integer',
+        'Perishable'         => 'boolean',
+        'DeliveryTimeWindow' => 'decimal:2',
+        'Longitude'          => 'decimal:8',
+        'Latitude'           => 'decimal:8',
+        'PromisedWindow'     => 'datetime',
+        'DeliveredAt'        => 'datetime',
+        'Created_at'         => 'datetime',
+        'UpdatedAt'         => 'datetime',
     ];
 
     // ─── Relationships ────────────────────────────────────────────────────────
@@ -61,30 +83,30 @@ class Order extends Model
     /** Customer who placed this order */
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
+        return $this->belongsTo(Customer::class, 'CustomerID(FK)', 'customer_id');
     }
 
     /** Driver assigned to deliver this order */
     public function driver()
     {
-        return $this->belongsTo(Driver::class, 'driver_id', 'driver_id');
+        return $this->belongsTo(Driver::class, 'DriverID(FK)', 'driver_id');
     }
 
-    /** Parcels contained within this order */
-    public function parcels()
+    /** Vehicle assigned to deliver this order */
+    public function vehicle()
     {
-        return $this->hasMany(Parcel::class, 'order_id', 'order_id');
+        return $this->belongsTo(Vehicle::class, 'vehicle_id(FK)', 'vehicle_id');
     }
 
     /** Route stop(s) associated with this order */
     public function routeStops()
     {
-        return $this->hasMany(RouteStop::class, 'order_id', 'order_id');
+        return $this->hasMany(RouteStop::class, 'order_id', 'OrderID');
     }
 
-    /** Cash ledger entries for this order */
-    public function cashLedgerEntries()
+    /** Cash ledger entry for this order */
+    public function cashLedgerEntry()
     {
-        return $this->hasMany(CashLedger::class, 'order_id', 'order_id');
+        return $this->belongsTo(CashLedger::class, 'TransactionID(FK)', 'transaction_id');
     }
 }

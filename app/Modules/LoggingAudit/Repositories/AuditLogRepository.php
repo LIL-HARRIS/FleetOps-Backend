@@ -16,8 +16,15 @@ class AuditLogRepository extends BaseRepository
 {
     /** Fields masked before persisting to protect PII */
     protected array $piiFields = [
-        'password', 'password_confirmation', 'phone', 'phone_no',
-        'email', 'remember_token', 'fcm_token', 'token', 'secret',
+        'password',
+        'password_confirmation',
+        'phone',
+        'phone_no',
+        'email',
+        'remember_token',
+        'fcm_token',
+        'token',
+        'secret',
     ];
 
     public function __construct(AuditLog $model)
@@ -32,8 +39,8 @@ class AuditLogRepository extends BaseRepository
     {
         // Mask PII before persisting
         $data['before_state'] = $this->maskPII($data['before_state'] ?? null);
-        $data['after_state']  = $this->maskPII($data['after_state'] ?? null);
-        $data['created_at']   = now();
+        $data['after_state'] = $this->maskPII($data['after_state'] ?? null);
+        $data['created_at'] = now();
 
         return $this->model->create($data);
     }
@@ -73,20 +80,24 @@ class AuditLogRepository extends BaseRepository
         if (!empty($filters['entity_type'])) {
             $query->where('entity_type', $filters['entity_type']);
         }
-        if (!empty($filters['entity_id'])) {
-            $query->where('entity_id', $filters['entity_id']);
-        }
         if (!empty($filters['action'])) {
             $query->where('action', $filters['action']);
         }
         if (!empty($filters['date_from'])) {
-            $query->where('created_at', '>=', $filters['date_from']);
+            $query->whereDate('created_at', '>=', $filters['date_from']);
         }
         if (!empty($filters['date_to'])) {
-            $query->where('created_at', '<=', $filters['date_to']);
+            $query->whereDate('created_at', '<=', $filters['date_to']);
         }
-        if (!empty($filters['module'])) {
-            $query->where('module', $filters['module']);
+
+        // التعديل الجديد: دعم مربع البحث (بالـ ID أو داخل محتوى الـ JSON)
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('audit_id', $search)
+                    ->orWhere('before_state', 'LIKE', "%{$search}%")
+                    ->orWhere('after_state', 'LIKE', "%{$search}%");
+            });
         }
 
         return $query->latest('created_at')->paginate($perPage);

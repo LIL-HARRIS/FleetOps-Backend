@@ -21,7 +21,7 @@ class VehicleRequest extends FormRequest
 
         return [
             'plate_number'         => 'required|string|max:20|unique:vehicles,plate_number,' . $vehicleId . ',vehicle_id',
-            'type'                 => 'required|in:light,heavy,refrigerated,motorcycle',
+            'type'                 => 'required|in:light,heavy,refrigerated',
             'max_weight_kg'        => 'required|numeric|min:0',
             'max_volume_m3'        => 'required|numeric|min:0',
             'odometer_km'          => 'nullable|numeric|min:0',

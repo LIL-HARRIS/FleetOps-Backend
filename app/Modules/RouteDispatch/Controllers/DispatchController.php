@@ -13,6 +13,9 @@ use App\Http\Controllers\Controller;
 use App\Modules\RouteDispatch\Services\DispatchService;
 use App\Modules\RouteDispatch\Services\RouteOptimizationService;
 use App\Modules\RouteDispatch\Requests\DispatchRequest;
+use App\Modules\RouteDispatch\Requests\CapacityCheckRequest;
+use App\Modules\RouteDispatch\Requests\ClusterOrdersRequest;
+use App\Modules\RouteDispatch\Requests\PriorityScoreRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -84,23 +87,64 @@ class DispatchController extends Controller
      * التحقق من سعة التحميل (RD-03 / fn03)
      * POST /api/v1/dispatch/capacity-check
      */
-    public function capacityCheck(Request $request): JsonResponse
+    public function capacityCheck(CapacityCheckRequest $request): JsonResponse
     {
-        // TODO: Check load capacity
-        // 1. Validate: vehicle_id, order_ids (array)
-        // $result = $this->optimizationService->checkLoadCapacity($request->vehicle_id, $request->order_ids)
-        // return response()->json(['success' => true, 'data' => $result])
+        $validatedData = $request->validated();
+
+        $result = $this->optimizationService->checkLoadCapacity($validatedData['data']);
+        $validClusters = array_values(array_filter($result, static fn (array $cluster): bool => (bool) ($cluster['valid'] ?? false)));
+        $invalidClusters = array_values(array_filter($result, static fn (array $cluster): bool => !((bool) ($cluster['valid'] ?? false))));
+        $allValid = count($invalidClusters) === 0;
+
+        return response()->json([
+            'success' => true,
+            'message' => $allValid
+                ? 'All clusters fit within the assigned vehicle capacities.'
+                : 'Some clusters exceed vehicle capacity or use an invalid vehicle.',
+            'summary' => [
+                'all_valid' => $allValid,
+                'total_clusters' => count($result),
+                'valid_clusters' => count($validClusters),
+                'invalid_clusters' => count($invalidClusters),
+            ],
+            'data' => $result,
+            'invalid_clusters' => $invalidClusters,
+        ]);
     }
 
     /**
      * التجميع الجغرافي للطلبات (RD-02 / fn02)
      * POST /api/v1/dispatch/cluster-orders
      */
-    public function clusterOrders(Request $request): JsonResponse
+    public function clusterOrders(ClusterOrdersRequest $request): JsonResponse
     {
-        // TODO: Cluster orders into zones
-        // 1. Validate: order_ids (required|array), cluster_count (required|integer|min:1)
-        // $clusters = $this->optimizationService->clusterOrders($request->order_ids, $request->cluster_count)
-        // return response()->json(['success' => true, 'data' => $clusters])
+        $validatedData = $request->validated();
+
+        $clusters = $this->optimizationService->clusterOrders($validatedData['order_ids']);
+
+        return response()->json(['success' => true, 'data' => $clusters]);
+    }
+
+    /**
+     * حساب درجة أولوية الطلبات (POST /api/v1/dispatch/priority-score)
+     *  score من 0 إلى 100 لكل طلب.
+     */
+    public function priorityScore(PriorityScoreRequest $request): JsonResponse
+    {
+        $validatedData = $request->validated();
+
+        $orderIds = $validatedData['order_ids'] ?? null;
+
+        if (!is_array($orderIds) || count($orderIds) === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The order_ids field is required and must be a non-empty array.',
+                'errors' => ['order_ids' => ['The order_ids field is required and must be a non-empty array.']],
+            ], 422);
+        }
+
+        $scores = $this->dispatchService->calculatePriorityScores($orderIds);
+
+        return response()->json(['success' => true, 'data' => $scores]);
     }
 }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\LoggingAudit\Controllers\AuditLogController;
 use App\Modules\LoggingAudit\Controllers\SystemLogController;
 
-Route::prefix('s')->middleware('auth:sanctum')->group(function () {
+Route::prefix('api/v1/audit')->middleware('auth:sanctum')->group(function () {
 
     // ══════════════════════════════════════════════════════════════════════════
     // Audit Logs (LA-01 / fn37) — Immutable, Read-Only

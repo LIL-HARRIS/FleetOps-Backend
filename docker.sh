@@ -169,7 +169,9 @@ clean_all() {
     echo -e "\033[1;31mWARNING: This will remove all containers and volumes!\033[0m"
     read -p "Are you sure? (yes/no) " confirm
     if [ "$confirm" = "yes" ]; then
-        docker compose down -v --rmi all
+        docker compose down -v
+        echo -e "\033[1;36mRemoving fleetops-backend image...\033[0m"
+        docker rmi fleetops-backend-app -f 2>/dev/null
         echo -e "\033[1;32mCleanup complete!\033[0m"
     else
         echo -e "\033[1;33mCancelled.\033[0m"

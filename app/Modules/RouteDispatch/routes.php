@@ -96,6 +96,9 @@ Route::prefix('api/v1/dispatch')->middleware('auth:sanctum')->group(function () 
     // POST /api/v1/dispatch/capacity-check  (RD-03 / fn03)
     Route::post('/capacity-check', [DispatchController::class, 'capacityCheck'])->name('dispatch.capacity-check');
 
+    // POST /api/v1/dispatch/priority-score  (order priority scoring stub)
+    Route::post('/priority-score', [DispatchController::class, 'priorityScore'])->name('dispatch.priority-score');
+
     // GET  /api/v1/dispatch/license-check  (RD-09 / fn08)
     Route::get('/license-check', [DispatchController::class, 'licenseCheck'])->name('dispatch.license-check');
 

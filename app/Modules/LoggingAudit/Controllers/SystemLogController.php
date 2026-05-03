@@ -29,10 +29,17 @@ class SystemLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // TODO: Get system logs with filters
-        // 1. Validate filters: level (in:debug,info,warning,error,critical), channel, date_from, date_to
-        // 2. Build query based on filters
-        // 3. Return paginated results
+        try {
+            $perPage = (int) $request->get('per_page', 50);
+            $filters = $request->only(['level', 'channel']);
+
+            // جلب البيانات من الـ Repository
+            $logs = $this->systemLogRepository->search($filters)->latest('created_at')->paginate($perPage);
+
+            return response()->json(['success' => true, 'data' => $logs], 200);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -41,19 +48,28 @@ class SystemLogController extends Controller
      */
     public function errors(Request $request): JsonResponse
     {
-        // TODO: $logs = $this->systemLogRepository->getErrors($request->per_page ?? 50)
-        // return response()->json(['success' => true, 'data' => $logs])
+        try {
+            $perPage = (int) $request->get('per_page', 50);
+            $logs = $this->systemLogRepository->getErrors($perPage);
+            return response()->json(['success' => true, 'data' => $logs], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * جلب سجلات قناة معينة
      * GET /api/v1/audit/system-logs/channel/{channel}
      */
-    public function byChannel(string $channel): JsonResponse
+    public function byChannel(string $channel, Request $request): JsonResponse
     {
-        // TODO: Validate channel in: app, security, performance, audit
-        // $logs = $this->systemLogRepository->getByChannel($channel)
-        // return response()->json(['success' => true, 'data' => $logs])
+        try {
+            $perPage = (int) $request->get('per_page', 50);
+            $logs = $this->systemLogRepository->getByChannel($channel, $perPage);
+            return response()->json(['success' => true, 'data' => $logs], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -62,7 +78,17 @@ class SystemLogController extends Controller
      */
     public function stats(): JsonResponse
     {
-        // TODO: Get log statistics
-        // Count logs grouped by level and channel for the last 24 hours, 7 days, 30 days
+        try {
+            // إحصائيات مبسطة لمعرفة حجم الأخطاء مقابل كل العمليات
+            $stats = [
+                'total_logs' => $this->systemLogRepository->count(),
+                'total_errors' => $this->systemLogRepository->getModel()->whereIn('level', ['error', 'critical'])->count(),
+                'security_events' => $this->systemLogRepository->getModel()->where('channel', 'security')->count(),
+            ];
+
+            return response()->json(['success' => true, 'data' => $stats], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

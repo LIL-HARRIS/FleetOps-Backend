@@ -25,11 +25,10 @@ RUN apk add --no-cache \
     intl
 
 # Install SQL Server drivers
-RUN curl --doh-url https://cloudflare-dns.com/dns-query -O https://download.microsoft.com/download/1/f/f/1fffb537-26ab-4947-a46a-7a45c27f6f77/msodbcsql18_18.2.2.1-1_amd64.apk \
-    && curl --doh-url https://cloudflare-dns.com/dns-query -O https://download.microsoft.com/download/1/f/f/1fffb537-26ab-4947-a46a-7a45c27f6f77/mssql-tools18_18.2.1.1-1_amd64.apk \
-    && apk add --allow-untrusted msodbcsql18_18.2.2.1-1_amd64.apk \
-    && apk add --allow-untrusted mssql-tools18_18.2.1.1-1_amd64.apk \
-    && rm -f msodbcsql18_18.2.2.1-1_amd64.apk mssql-tools18_18.2.1.1-1_amd64.apk
+COPY docker/build_deps/msodbcsql18_18.2.2.1-1_amd64.apk docker/build_deps/mssql-tools18_18.2.1.1-1_amd64.apk /tmp/
+RUN apk add --allow-untrusted /tmp/msodbcsql18_18.2.2.1-1_amd64.apk \
+    && apk add --allow-untrusted /tmp/mssql-tools18_18.2.1.1-1_amd64.apk \
+    && rm -f /tmp/msodbcsql18_18.2.2.1-1_amd64.apk /tmp/mssql-tools18_18.2.1.1-1_amd64.apk
 
 # Install PHP SQL Server extensions
 
@@ -37,11 +36,10 @@ RUN curl --doh-url https://cloudflare-dns.com/dns-query -O https://download.micr
 #RUN pecl install sqlsrv pdo_sqlsrv \
 #    && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
-RUN curl --doh-url https://cloudflare-dns.com/dns-query -O https://pecl.php.net/get/sqlsrv-5.12.0.tgz \
-    && curl --doh-url https://cloudflare-dns.com/dns-query -O https://pecl.php.net/get/pdo_sqlsrv-5.12.0.tgz \
-    && pecl install sqlsrv-5.12.0.tgz pdo_sqlsrv-5.12.0.tgz \
+COPY docker/build_deps/sqlsrv-5.12.0.tgz docker/build_deps/pdo_sqlsrv-5.12.0.tgz /tmp/
+RUN pecl install /tmp/sqlsrv-5.12.0.tgz /tmp/pdo_sqlsrv-5.12.0.tgz \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv \
-    && rm sqlsrv-5.12.0.tgz pdo_sqlsrv-5.12.0.tgz
+    && rm /tmp/sqlsrv-5.12.0.tgz /tmp/pdo_sqlsrv-5.12.0.tgz
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

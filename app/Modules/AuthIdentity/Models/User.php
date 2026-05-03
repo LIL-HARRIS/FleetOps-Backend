@@ -24,7 +24,7 @@ class User extends Authenticatable
     public $incrementing = true;
 
     // Eloquent uses created_at / updated_at by default — matches DDL columns
-    public $timestamps = true;
+    public $timestamps = false;
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -107,4 +107,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(Mechanic::class, 'mechanic_id', 'user_id');
     }
+
+
 }

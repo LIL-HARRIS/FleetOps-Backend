@@ -170,7 +170,9 @@ function Clean-All {
     Write-Host "WARNING: This will remove all containers and volumes!" -ForegroundColor Red
     $confirm = Read-Host "Are you sure? (yes/no)"
     if ($confirm -eq "yes") {
-        docker-compose down -v --rmi all
+        docker-compose down -v
+        Write-Host "Removing fleetops-backend image..." -ForegroundColor Cyan
+        docker rmi fleetops-backend-app -f 2>$null
         Write-Host "Cleanup complete!" -ForegroundColor Green
     } else {
         Write-Host "Cancelled." -ForegroundColor Yellow
