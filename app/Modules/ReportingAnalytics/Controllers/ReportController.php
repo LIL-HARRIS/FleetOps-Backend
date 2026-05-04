@@ -43,9 +43,9 @@ class ReportController extends Controller
     {
         try {
             // Validate date format if provided
-            // $request->validate([
-            //     'date' => 'nullable|date|date_format:Y-m-d',
-            // ]);
+            $request->validate([
+                'date' => 'nullable|date|date_format:Y-m-d',
+            ]);
             // Get date from request or default to today
             // Use filled() to avoid passing null to the strictly typed getDailyDashboard() method
             $date = $request->filled('date') ? $request->input('date') : now()->toDateString();
