@@ -24,12 +24,14 @@ class Driver extends Model
 {
     use HasFactory;
 
+    public const LICENSE_TYPES = ['light', 'heavy', 'refrigerated'];
+
     protected $table      = 'drivers';
     protected $primaryKey = 'driver_id';
     protected $keyType    = 'int';
     public $incrementing  = false; // PK is also a FK — no auto-increment
 
-    // No UpdatedAt in DDL
+    // Only CreatedAt in DDL
     const UPDATED_AT = null;
     const CREATED_AT = 'created_at';
 
@@ -37,14 +39,18 @@ class Driver extends Model
     protected $fillable = [
         'driver_id',        // Set by application (mirrors user_id)
         'license_no',
+        'license_type',
         'vehicle_id',
         'status',
+        'score',
         'created_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
-        'created_at' => 'datetime',
+        'score'        => 'integer',
+        'license_type' => 'string',
+        'created_at'   => 'datetime',
     ];
 
     // ─── Scopes ───────────────────────────────────────────────────────────────
@@ -57,6 +63,16 @@ class Driver extends Model
     public function scopeOnShift($query)
     {
         return $query->where('status', 'OnShift');
+    }
+
+    public function scopeByScore($query, int $minScore = 0)
+    {
+        return $query->where('score', '>=', $minScore);
+    }
+
+    public function scopeByLicenseType($query, string $licenseType)
+    {
+        return $query->where('license_type', $licenseType);
     }
 
     // ─── Relationships ────────────────────────────────────────────────────────

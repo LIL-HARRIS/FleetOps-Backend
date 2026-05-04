@@ -53,6 +53,7 @@ class ProfileSeeder extends Seeder
 
         // ─── Drivers ──────────────────────────────────────────────────────────
         $vehicles = DB::table('vehicles')->where('status', 'Active')->pluck('vehicle_id')->toArray();
+        $licenseTypes = ['light', 'heavy', 'refrigerated'];
 
         $drivers = [
             ['email' => 'ahmed.driver@fleetops.com',   'license_no' => 'DRV-EG-10001', 'status' => 'Available'],
@@ -75,8 +76,10 @@ class ProfileSeeder extends Seeder
                     [
                         'driver_id'  => $user->user_id,
                         'license_no' => $d['license_no'],
+                        'license_type' => $licenseTypes[$i % count($licenseTypes)],
                         'vehicle_id' => $vehicleId,
                         'status'     => $d['status'],
+                        'score'      => rand(60, 95),  // Random score 60-95
                         'created_at' => $now,
                     ]
                 );

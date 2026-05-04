@@ -39,6 +39,13 @@ return new class extends Migration
             // DDL: TransactionTs datetimeoffset(3) DEFAULT sysdatetimeoffset() NOT NULL
             $table->timestampTz('transaction_ts', 3)->useCurrent();
 
+            // DDL: Handed_over_to_company bit NULL
+            $table->boolean('handed_over_to_company')->nullable();
+
+            // DDL: CreatedAt and UpdatedAt datetime2(7)
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+
             // FK_CL_Driver → drivers.driver_id (no cascade in DDL)
             $table->foreign('driver_id')->references('driver_id')->on('drivers');
         });

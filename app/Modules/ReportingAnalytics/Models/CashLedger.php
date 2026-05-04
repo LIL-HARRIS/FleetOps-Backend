@@ -24,8 +24,10 @@ class CashLedger extends Model
     protected $keyType    = 'int';
     public $incrementing  = true;
 
-    // No standard timestamps in DDL — has transaction_ts
-    public $timestamps = false;
+    // DDL has CreatedAt and UpdatedAt timestamps
+    public $timestamps = true;
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
     /** @var array<string> */
     protected $fillable = [
@@ -35,12 +37,18 @@ class CashLedger extends Model
         'payment_method',
         'payment_status',
         'transaction_ts',
+        'handed_over_to_company',
+        'created_at',
+        'updated_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
-        'amount_collected' => 'float',
-        'transaction_ts'   => 'datetime',
+        'amount_collected'      => 'float',
+        'transaction_ts'        => 'datetime',
+        'handed_over_to_company' => 'boolean',
+        'created_at'            => 'datetime',
+        'updated_at'            => 'datetime',
     ];
 
     // ─── Scopes ───────────────────────────────────────────────────────────────

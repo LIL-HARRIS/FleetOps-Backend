@@ -152,7 +152,9 @@ class ModuleServiceProvider extends ServiceProvider
             \App\Modules\RouteDispatch\Services\RouteService::class,
             fn($app) => new \App\Modules\RouteDispatch\Services\RouteService(
                 $app->make(\App\Modules\RouteDispatch\Repositories\RouteRepository::class),
-                $app->make(\App\Modules\RouteDispatch\Repositories\VehicleRepository::class)
+                $app->make(\App\Modules\RouteDispatch\Repositories\VehicleRepository::class),
+                $app->make(\App\Modules\RouteDispatch\Repositories\RouteStopRepository::class),
+                $app->make(\App\Modules\OrderManagement\Repositories\OrderRepository::class)
             )
         );
 

@@ -23,6 +23,9 @@ return new class extends Migration
             // DDL: LicenseNo nvarchar(50) NOT NULL UNIQUE
             $table->string('license_no', 50)->unique();
 
+            // License type: light | heavy | refrigerated
+            $table->enum('license_type', ['light', 'heavy', 'refrigerated']);
+
             // DDL: VehicleID bigint NULL FK → vehicles ON DELETE CASCADE
             $table->unsignedBigInteger('vehicle_id')->nullable();
 
@@ -30,6 +33,9 @@ return new class extends Migration
             $table->enum('status', ['Available', 'OnShift', 'OffShift', 'Busy', 'Break'])
                   ->default('Available')
                   ->nullable();
+
+            // DDL: Score int 0-100
+            $table->integer('score')->default(0);
 
             // DDL: CreatedAt datetime2 DEFAULT getdate() NULL (no UpdatedAt in DDL)
             $table->dateTime('created_at')->nullable();

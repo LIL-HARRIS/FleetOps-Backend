@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\RouteDispatch\Services\RouteService;
 use App\Modules\RouteDispatch\Services\RouteOptimizationService;
 use App\Modules\RouteDispatch\Requests\RouteRequest;
+use App\Modules\RouteDispatch\Requests\OptimizeRouteRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -44,20 +45,88 @@ class RouteController extends Controller
     /** POST /api/v1/dispatch/routes */
     public function store(RouteRequest $request): JsonResponse
     {
-        // TODO: Create route (validates driver-vehicle pairing - fn08)
-        // return 201 on success
+        $validated = $request->validated();
+        
+        // Get idempotency key from header to prevent duplicate requests
+        $idempotencyKey = $request->header('Idempotency-Key');
+
+        // If client did not provide an Idempotency-Key, compute a deterministic hash
+        // from the normalized request payload to serve as an idempotency key.
+        if (empty($idempotencyKey)) {
+            // Normalize payload deterministically: recursively sort keys
+            $normalize = function (&$data) use (&$normalize) {
+                if (is_array($data)) {
+                    // sort associative arrays by keys
+                    $assoc = array_keys($data) !== range(0, count($data) - 1);
+                    if ($assoc) {
+                        ksort($data);
+                    }
+
+                    foreach ($data as &$value) {
+                        $normalize($value);
+                    }
+                }
+            };
+
+            $payload = $validated;
+            $normalize($payload);
+            $normalizedJson = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $idempotencyKey = hash('sha256', $normalizedJson ?? json_encode($validated));
+        }
+
+        try {
+            $route = $this->routeService->createRoute($validated, $idempotencyKey);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إنشاء المسار بنجاح',
+                'data' => $route
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /** PUT /api/v1/dispatch/routes/{id} */
     public function update(int $id, RouteRequest $request): JsonResponse
     {
-        // TODO: Update route (only if planned)
+        $validated = $request->validated();
+
+        try {
+            $route = $this->routeService->updateRoute($id, $validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تحديث المسار بنجاح',
+                'data' => $route
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /** DELETE /api/v1/dispatch/routes/{id} */
     public function destroy(int $id): JsonResponse
     {
-        // TODO: Delete route (only if planned)
+        try {
+            $this->routeService->cancelRoute($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إلغاء المسار بنجاح',
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -81,12 +150,29 @@ class RouteController extends Controller
 
     /**
      * تحسين ترتيب المحطات (TSP - fn06)
-     * POST /api/v1/dispatch/routes/{id}/optimize
+     * POST /api/v1/dispatch/routes/optimize
      */
-    public function optimizeRoute(int $id): JsonResponse
+    public function optimizeRoute(OptimizeRouteRequest $request): JsonResponse
     {
-        // TODO: $stops = $this->optimizationService->optimizeStopSequence($id)
-        // return response()->json(['success' => true, 'message' => 'تم تحسين المسار', 'data' => $stops]);
+        $payload = $request->validated();
+
+        try {
+            $clustersOut = $this->optimizationService->optimizeClusters($payload['clusters'], $payload['start_date'] ?? null);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'clusters' => $clustersOut,
+                ],
+            ]);
+        } catch (\Throwable $throwable) {
+            report($throwable);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to optimize route clusters at this time.',
+            ], 500);
+        }
     }
 
     /**
