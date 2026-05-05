@@ -9,7 +9,10 @@
 
 namespace App\Modules\ReportingAnalytics\Services;
 
+use App\Modules\Maintenance\Models\WorkOrder;
+use App\Modules\RouteDispatch\Models\Vehicle;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
@@ -53,18 +56,54 @@ class ReportService
 
     /**
      * تقرير تكاليف الصيانة لأسطول المركبات (AN-01)
-     * @param string $periodStart
-     * @param string $periodEnd
-     * @return array  per-vehicle maintenance costs
+     * @param string $periodStart  YYYY-MM-DD
+     * @param string $periodEnd    YYYY-MM-DD
+     * @return array  per-vehicle maintenance costs, sorted by total_cost descending
      */
     public function getMaintenanceCostReport(string $periodStart, string $periodEnd): array
     {
-        // TODO: Get maintenance cost report
-        // 1. Query work_orders in period with repair_cost
-        // 2. Group by vehicle_id
-        // 3. Sum total_cost per vehicle
-        // 4. Join with vehicle market_value for cost-to-value ratio
-        // 5. Return sorted by total_cost descending
+        // 1. Query work_orders in period with repair_cost, grouped by vehicle_id
+        $rows = WorkOrder::query()
+            ->select('vehicle_id', DB::raw('SUM(repair_cost) as total_cost'), DB::raw('COUNT(*) as work_order_count'))
+            ->whereBetween('opened_at', [$periodStart . ' 00:00:00', $periodEnd . ' 23:59:59'])
+            ->whereNotNull('repair_cost')
+            ->groupBy('vehicle_id')
+            ->orderByDesc('total_cost')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        // 2. Load vehicle market values in one query
+        $vehicleIds = $rows->pluck('vehicle_id')->all();
+        $vehicles   = Vehicle::whereIn('vehicle_id', $vehicleIds)
+            ->get(['vehicle_id', 'VehicleModel', 'VehicleLicense', 'MarketValue'])
+            ->keyBy('vehicle_id');
+
+        // 3. Build result with cost-to-value ratio per vehicle
+        $report = [];
+        foreach ($rows as $row) {
+            $vehicle     = $vehicles->get($row->vehicle_id);
+            $marketValue = $vehicle ? (float) $vehicle->MarketValue : 0.0;
+            $totalCost   = (float) $row->total_cost;
+
+            $ratio                = ($marketValue > 0) ? round($totalCost / $marketValue, 4) : null;
+            $recommendReplacement = ($ratio !== null) ? $ratio > 0.40 : false;
+
+            $report[] = [
+                'vehicle_id'            => $row->vehicle_id,
+                'vehicle_model'         => $vehicle?->VehicleModel,
+                'vehicle_license'       => $vehicle?->VehicleLicense,
+                'market_value'          => $marketValue,
+                'total_cost'            => $totalCost,
+                'work_order_count'      => (int) $row->work_order_count,
+                'cost_to_value_ratio'   => $ratio,
+                'recommend_replacement' => $recommendReplacement,
+            ];
+        }
+
+        return $report;
     }
 
     /**
