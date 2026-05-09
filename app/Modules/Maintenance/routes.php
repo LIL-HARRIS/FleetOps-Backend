@@ -11,9 +11,22 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\Maintenance\Controllers\WorkOrderController;
 use App\Modules\Maintenance\Controllers\SparePartController;
 use App\Modules\Maintenance\Controllers\VehicleInspectionController;
+use App\Modules\Maintenance\Controllers\DashboardController;
+use App\Modules\Maintenance\Controllers\EmergencyDispatchController;
+use App\Modules\Maintenance\Controllers\AlertsController;
 
 Route::prefix('api/v1/maintenance')->middleware('auth:sanctum')->group(function () {
 
+    // =====================================================================
+    // Dashboard
+    // =====================================================================
+    Route::get('/dashboard-summary', [DashboardController::class, 'getDashboardSummary'])->name('maintenance.dashboard-summary');
+
+    // =====================================================================
+    // Maintenance Vehicles
+    // =====================================================================
+    Route::get('/vehicles', [\App\Modules\RouteDispatch\Controllers\VehicleController::class, 'maintenanceVehicles'])
+        ->name('maintenance.vehicles.index');
     // =====================================================================
     // Work Orders (MT-02/03/04/06)
     // =====================================================================
@@ -70,5 +83,28 @@ Route::prefix('api/v1/maintenance')->middleware('auth:sanctum')->group(function 
         Route::get('/',     [VehicleInspectionController::class, 'index'])->name('maintenance.inspections.index');
         Route::post('/',    [VehicleInspectionController::class, 'store'])->name('maintenance.inspections.store');
         Route::get('/{id}', [VehicleInspectionController::class, 'show'])->name('maintenance.inspections.show')->where('id', '[0-9]+');
+    });
+
+    // =====================================================================
+    // Emergency Dispatch
+    // =====================================================================
+    Route::prefix('emergency')->group(function () {
+        Route::get('/incidents', [EmergencyDispatchController::class, 'incidents'])->name('maintenance.emergency.incidents');
+        Route::get('/incident-details/{id}', [EmergencyDispatchController::class, 'incidentDetails'])->name('maintenance.emergency.incident-details')->where('id', '[0-9]+');
+        Route::get('/nearby-mechanics/{id}', [EmergencyDispatchController::class, 'nearbyMechanics'])->name('maintenance.emergency.nearby-mechanics')->where('id', '[0-9]+');
+        Route::post('/dispatch-mechanic/{id}', [EmergencyDispatchController::class, 'dispatchMechanic'])->name('maintenance.emergency.dispatch-mechanic')->where('id', '[0-9]+');
+    });
+
+    // =====================================================================
+    // Alerts
+    // =====================================================================
+    Route::prefix('alerts')->group(function () {
+        Route::get('/odometer', [AlertsController::class, 'odometerAlerts'])->name('maintenance.alerts.odometer');
+        Route::get('/insurance', [AlertsController::class, 'insuranceAlerts'])->name('maintenance.alerts.insurance');
+        Route::get('/inspection', [AlertsController::class, 'inspectionAlerts'])->name('maintenance.alerts.inspection');
+        Route::get('/parts', [AlertsController::class, 'partsAlerts'])->name('maintenance.alerts.parts');
+
+        Route::patch('/insurance-renew/{id}', [AlertsController::class, 'renewInsurance'])->name('maintenance.alerts.insurance-renew')->where('id', '[0-9]+');
+        Route::patch('/inspection-complete/{id}', [AlertsController::class, 'completeInspection'])->name('maintenance.alerts.inspection-complete')->where('id', '[0-9]+');
     });
 });

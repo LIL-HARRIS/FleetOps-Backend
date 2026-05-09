@@ -11,10 +11,27 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\ReportingAnalytics\Controllers\KpiController;
 use App\Modules\ReportingAnalytics\Controllers\ReportController;
 use App\Modules\ReportingAnalytics\Controllers\incidentReportController;
-use App\Modules\ReportingAnalytics\Controllers\CashLedgerController;
-
 
 Route::prefix('api/v1/analytics')->middleware('auth:sanctum')->group(function () {
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Analytics Page Endpoints 
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // GET /api/v1/analytics/analytics-kpis?range=today|7d|30d
+    Route::get('/analytics-kpis',              [KpiController::class, 'analyticsKpis'])->name('analytics.analytics-kpis');
+
+    // GET /api/v1/analytics/analytics-fleet-distribution
+    Route::get('/analytics-fleet-distribution',[KpiController::class, 'fleetDistribution'])->name('analytics.fleet-distribution');
+
+    // GET /api/v1/analytics/analytics-fuel-audit?range=today|7d|30d
+    Route::get('/analytics-fuel-audit',        [KpiController::class, 'fuelAudit'])->name('analytics.fuel-audit');
+
+    // GET /api/v1/analytics/analytics-revenue-chart?months=6
+    Route::get('/analytics-revenue-chart',     [ReportController::class, 'revenueChart'])->name('analytics.revenue-chart');
+
+    // GET /api/v1/analytics/analytics-maintenance-cost?period_start=&period_end=
+    Route::get('/analytics-maintenance-cost',  [ReportController::class, 'maintenanceCost'])->name('analytics.maintenance-cost');
 
     // ══════════════════════════════════════════════════════════════════════════
     // KPIs & Metrics (AN-01/02/03/04/07)
