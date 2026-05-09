@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Modules\OrderManagement\Controllers\OrderController;
 use App\Modules\OrderManagement\Controllers\ProofOfDeliveryController;
 use App\Modules\OrderManagement\Controllers\InspectionController;
+use App\Modules\OrderManagement\Controllers\CodController;
 
 Route::prefix('api/v1')->middleware('auth:sanctum')->group(function () {
 
@@ -45,5 +46,14 @@ Route::prefix('api/v1')->middleware('auth:sanctum')->group(function () {
         // Proof of Delivery (fn13/14)
         Route::get('/{orderId}/pod',  [ProofOfDeliveryController::class, 'show'])->name('orders.pod.show')->where('orderId', '[0-9]+');
         Route::post('/{orderId}/pod', [ProofOfDeliveryController::class, 'store'])->name('orders.pod.store')->where('orderId', '[0-9]+');
+    });
+
+    // =====================================================================
+    // COD Management
+    // =====================================================================
+    Route::prefix('cod')->group(function () {
+        Route::get('/', [CodController::class, 'index'])->name('cod.index');
+        Route::get('/{id}', [CodController::class, 'show'])->name('cod.show');
+        Route::patch('/{id}/handover', [CodController::class, 'markHandover'])->name('cod.handover');
     });
 });
