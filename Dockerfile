@@ -98,11 +98,12 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "realpath_cache_size=4096K" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "realpath_cache_ttl=600" >> /usr/local/etc/php/conf.d/opcache.ini
 
-# Set proper permissions - allow www-data to write to storage and cache
-RUN mkdir -p /var/www/html/storage/logs /var/www/html/bootstrap/cache \
-    && chown -R www-data:www-data /var/www/html \
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+USER www-data
 
 EXPOSE 9000
 
-CMD ["docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
