@@ -27,21 +27,31 @@ class PreTripInspection extends Model
     // No timestamps in DDL (has inspection_ts instead)
     public $timestamps = false;
 
-    /** @var array<string> */
+    /**
+     * DB columns that can be mass-assigned.
+     * Mirrors: pre_trip_inspections DDL (inspection_id is PK/auto, is_success is computed).
+     *
+     * @var array<string>
+     */
     protected $fillable = [
-        'driver_id',
-        'vehicle_id',
-        'inspection_ts',
-        'odometer_reading',
-        'fuel_level',
-        'tires_ok',
-        'brakes_ok',
-        'lights_ok',
-        'fluids_ok',
-        // is_success is a computed/stored column — do not include in fillable
+        'driver_id',         // FK → drivers.driver_id
+        'vehicle_id',        // FK → vehicles.vehicle_id
+        'inspection_ts',     // datetimeoffset — defaults to now() in DB
+        'odometer_reading',  // decimal(12,2), >= 0
+        'fuel_level',        // tinyint 0–100
+        'tires_ok',          // derived: pressure_tread_depth && wheel_nut_security && sidewall_condition && spare_tire
+        'brakes_ok',         // derived: service_brake_test && parking_brake_engagement && air_leakage_check
+        'lights_ok',         // derived: headlights_indicators && brake_tail_lights && reflectors_markers
+        'fluids_ok',         // derived: documents_ok (insurance + registration + route_manifest)
+                             //          AND engine_ok  (mirror_adjustments + wipers_fluid + emergency_kit)
+        // is_success — PERSISTED computed column (tires_ok & brakes_ok & lights_ok & fluids_ok), DO NOT fill
     ];
 
-    /** @var array<string, string> */
+    /**
+     * Attribute casting — keeps PHP types aligned with DB column types.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'inspection_ts'    => 'datetime',
         'odometer_reading' => 'float',
@@ -50,15 +60,21 @@ class PreTripInspection extends Model
         'brakes_ok'        => 'boolean',
         'lights_ok'        => 'boolean',
         'fluids_ok'        => 'boolean',
-        'is_success'       => 'boolean',
+        'is_success'       => 'boolean',  // computed/stored — read-only
     ];
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    /** Returns true if all checklist items passed (mirrors computed column) */
+    /**
+     * Returns true if all four aggregate checks passed.
+     * Mirrors the DB computed column: is_success.
+     */
     public function allChecksPassed(): bool
     {
-        return $this->tires_ok && $this->brakes_ok && $this->lights_ok && $this->fluids_ok;
+        return $this->tires_ok
+            && $this->brakes_ok
+            && $this->lights_ok
+            && $this->fluids_ok;
     }
 
     // ─── Relationships ────────────────────────────────────────────────────────

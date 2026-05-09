@@ -30,7 +30,7 @@ class RouteStop extends Model
     protected $fillable = [
         'route_id',
         'stop_no',
-        'order_id',
+        'OrderID',
         'eta',
         'actual_arrival_time',
         'latitude',

@@ -27,7 +27,11 @@ class RouteStopRepository extends BaseRepository
      */
     public function getForRoute(int $routeId): Collection
     {
-        return $this->model->where('route_id', $routeId)->orderBy('stop_no')->get();
+        return $this->model
+            ->where('route_id', $routeId)
+            ->with(['order.customer.user'])
+            ->orderBy('stop_no')
+            ->get();
     }
 
     /**

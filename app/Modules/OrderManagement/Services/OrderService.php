@@ -124,12 +124,12 @@ class OrderService
 
     public function getRouteOrders(int $routeId)
     {
-        // TODO: return $this->orderRepository->getForRoute($routeId);
+        return $this->orderRepository->getForRoute($routeId);
     }
 
     public function getDriverOrders(int $driverId)
     {
-        // TODO: return $this->orderRepository->getForDriver($driverId);
+        return $this->orderRepository->getForDriver($driverId);
     }
 
     /**

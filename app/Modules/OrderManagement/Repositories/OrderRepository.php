@@ -22,12 +22,28 @@ class OrderRepository extends BaseRepository
 
     public function getForRoute(int $routeId): Collection
     {
-        // TODO: return $this->model->forRoute($routeId)->with('proofOfDelivery')->get();
+        return $this->model
+            ->whereHas('routeStops', function ($query) use ($routeId) {
+                $query->where('route_id', $routeId);
+            })
+            ->with([
+                'routeStops' => function ($query) use ($routeId) {
+                    $query->where('route_id', $routeId)->orderBy('stop_no');
+                },
+                'customer.user',
+                'driver.user',
+                'vehicle'
+            ])
+            ->get();
     }
 
     public function getForDriver(int $driverId): Collection
     {
-        // TODO: return $this->model->forDriver($driverId)->orderBy('created_at', 'desc')->get();
+        return $this->model
+            ->where('DriverID(FK)', $driverId)
+            ->with(['customer.user', 'vehicle'])
+            ->orderBy('Created_at', 'desc')
+            ->get();
     }
 
     public function findByQrCode(string $qrCode): ?Order
@@ -116,6 +132,11 @@ class OrderRepository extends BaseRepository
         return $this->model->where('Status', $status)
             ->with('customer:customer_id,address', 'customer.user:user_id,name')
             ->get();
+    }
+
+    public function getDriverOrders(int $driverId)
+    {
+        return $this->getForDriver($driverId);
     }
 
     public function cashOrders ($driverId){

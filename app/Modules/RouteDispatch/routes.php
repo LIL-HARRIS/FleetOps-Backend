@@ -54,6 +54,8 @@ Route::prefix('api/v1/dispatch')->middleware('auth:sanctum')->group(function () 
     // Route Stop Actions (not nested under a specific route)
     // =====================================================================
     Route::prefix('stops')->group(function () {
+        // GET /api/v1/dispatch/stops/{stopId}
+        Route::get('/{stopId}', [RouteStopController::class, 'show'])->name('dispatch.stops.show')->where('stopId', '[0-9]+');
         // PATCH /api/v1/dispatch/stops/{stopId}/status
         Route::patch('/{stopId}/status', [RouteStopController::class, 'updateStatus'])->name('dispatch.stops.status')->where('stopId', '[0-9]+');
         // DELETE /api/v1/dispatch/stops/{stopId}

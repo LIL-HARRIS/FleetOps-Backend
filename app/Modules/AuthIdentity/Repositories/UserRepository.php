@@ -12,8 +12,7 @@ namespace App\Modules\AuthIdentity\Repositories;
 use App\Modules\Shared\Repositories\BaseRepository;
 use App\Modules\AuthIdentity\Models\User;
 use App\Modules\AuthIdentity\Models\Driver;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 class UserRepository extends BaseRepository
 {
@@ -29,7 +28,6 @@ class UserRepository extends BaseRepository
     {
         return $this->model->where('email', $email)->first();
     }
-
     /**
      * جلب المستخدمين النشطين
      */
@@ -37,7 +35,7 @@ class UserRepository extends BaseRepository
     {
         return $this->model->active()->get();
     }
-
+    
     /**
      * Build the standard frontend driver shape from a Driver + eager-loaded User.
      * Centralizes mapping so both getDrivers() and getDriversByStatus() stay consistent.
@@ -79,32 +77,25 @@ class UserRepository extends BaseRepository
      */
     public function getDrivers(): Collection
     {
-        $drivers = Driver::query()
+        return Driver::query()
             ->with('user:user_id,name,email,phone_no')
             ->get();
-
-        // ->map() returns Support\Collection (not Eloquent\Collection)
-        return $drivers->map(fn($d) => $this->mapDriver($d));
     }
 
     /**
-     * جلب السائقين حسب الحالة (Available / OnShift / OffShift)
+     * جلب السائقين حسب الحالة (نشط/غير نشط)
      */
     public function getDriversByStatus(string $status): Collection
     {
-        $drivers = Driver::query()
-            ->where('status', $status)
-            ->with('user:user_id,name,email,phone_no')
+        return Driver::query()->where('status', $status)
+            ->with('user:user_id,name,email,phone_no')          
             ->get();
-
-        // ->map() returns Support\Collection (not Eloquent\Collection)
-        return $drivers->map(fn($d) => $this->mapDriver($d));
     }   
 
     /**
      * جلب الموزعين
      */
-    public function getDispatchers(): EloquentCollection
+    public function getDispatchers(): Collection
     {
         return $this->model->active()->byRole('Dispatcher')->get();
     }
@@ -112,7 +103,7 @@ class UserRepository extends BaseRepository
     /**
      * جلب مديري الأسطول
      */
-    public function getFleetManagers(): EloquentCollection
+    public function getFleetManagers(): Collection
     {
         return $this->model->active()->byRole('FleetManager')->get();
     }
@@ -120,7 +111,7 @@ class UserRepository extends BaseRepository
     /**
      * جلب الميكانيكيين
      */
-    public function getMechanics(): EloquentCollection
+    public function getMechanics(): Collection
     {
         return $this->model->active()->byRole('Mechanic')->get();
     }

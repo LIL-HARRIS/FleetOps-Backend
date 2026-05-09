@@ -33,7 +33,19 @@ class VehicleController extends Controller
     /** GET /api/v1/dispatch/vehicles/{id} */
     public function show(int $id): JsonResponse
     {
-        // TODO: return single vehicle with full details
+        try {
+            $vehicle = $this->vehicleService->getVehicleById($id);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $vehicle,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 404);
+        }
     }
 
     /** POST /api/v1/dispatch/vehicles */

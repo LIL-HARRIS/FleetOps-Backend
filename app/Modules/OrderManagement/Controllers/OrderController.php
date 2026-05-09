@@ -172,13 +172,39 @@ class OrderController extends Controller
     /** GET /api/v1/orders/route/{routeId} */
     public function routeOrders(int $routeId): JsonResponse
     {
-        // TODO: return orders for specific route
+        try {
+            $orders = $this->orderService->getRouteOrders($routeId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Orders for route retrieved successfully.',
+                'data'    => $orders,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving orders for route: ' . $e->getMessage(),
+            ], 400);
+        }
     }
 
     /** GET /api/v1/orders/driver/{driverId} */
     public function driverOrders(int $driverId): JsonResponse
     {
-        // TODO: return orders assigned to specific driver
+        try {
+            $orders = $this->orderService->getDriverOrders($driverId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Orders for driver retrieved successfully.',
+                'data'    => $orders,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving orders for driver: ' . $e->getMessage(),
+            ], 400);
+        }
     }
 
     /** GET /api/v1/orders/cash */

@@ -65,6 +65,30 @@ class RouteStopController extends Controller
     }
 
     /**
+     * جلب تفاصيل محطة مسار معينة
+     * GET /api/v1/dispatch/stops/{stopId}
+     */
+    public function show(int $stopId): JsonResponse
+    {
+        try {
+            $stop = \App\Modules\RouteDispatch\Models\RouteStop::with([
+                'order.customer.user',
+            ])->findOrFail($stopId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stop details retrieved successfully.',
+                'data' => $stop
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * تحديث حالة محطة (وصول / إنهاء / تخطي)
      * PATCH /api/v1/dispatch/stops/{stopId}/status
      */

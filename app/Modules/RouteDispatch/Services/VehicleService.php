@@ -23,12 +23,12 @@ class VehicleService
 
     public function getAllVehicles(int $perPage = 15)
     {
-        // TODO: return $this->vehicleRepository->paginate($perPage);
+        return $this->vehicleRepository->paginate($perPage);
     }
 
     public function getVehicleById(int $id)
     {
-        // TODO: return $this->vehicleRepository->findByIdOrFail($id);
+        return $this->vehicleRepository->findByIdOrFail($id);
     }
 
     public function getAvailableVehicles()

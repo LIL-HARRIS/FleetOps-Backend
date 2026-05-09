@@ -27,7 +27,7 @@ class VehicleRepository extends BaseRepository
 
     public function getByType(string $type): Collection
     {
-        // TODO: return $this->model->available()->byType($type)->get();
+        return $this->model->available()->byType($type)->get();
     }
 
     public function updateStatus(int $vehicleId, string $status): bool

@@ -21,12 +21,12 @@ class KpiRepository extends BaseRepository
 
     public function getForPeriod(string $periodType, string $startDate, string $endDate)
     {
-        // TODO: return $this->model->where('period_type', $periodType)
-        //    ->whereBetween('period_start', [$startDate, $endDate])->get();
+        return $this->model->where('period_type', $periodType)
+            ->whereBetween('period_start', [$startDate, $endDate])->get();
     }
 
     public function getLatestByMetric(string $metricName)
     {
-        // TODO: return $this->model->where('metric_name', $metricName)->latest('period_start')->first();
+        return $this->model->where('metric_name', $metricName)->latest('period_start')->first();
     }
 }

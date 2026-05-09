@@ -72,4 +72,13 @@ Route::prefix('api/v1/analytics')->middleware('auth:sanctum')->group(function ()
         // POST /api/v1/analytics/reports/incidents-reports 
         Route::post('/incidents-reports', [incidentReportController::class, 'createIncidentReport'])->name('analytics.reports.incidents-reports');
     });
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // Cash Ledger (COD Reconciliation)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    Route::prefix('reconciliation')->group(function () {
+        Route::get('/summary/{routeId}', [CashLedgerController::class, 'getSummary'])->name('analytics.reconciliation.summary');
+        Route::post('/submit', [CashLedgerController::class, 'submitReconciliation'])->name('analytics.reconciliation.submit');
+    });
 });
