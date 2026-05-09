@@ -95,8 +95,14 @@ class OrderSeeder extends Seeder
         }
 
         if (!empty($orders)) {
-            foreach (array_chunk($orders, 50) as $chunk) {
-                DB::table('order')->insert($chunk);
+            DB::connection()->getPdo()->exec('SET IDENTITY_INSERT [order] ON');
+            
+            try {
+                foreach (array_chunk($orders, 50) as $chunk) {
+                    DB::table('order')->insert($chunk);
+                }
+            } finally {
+                DB::connection()->getPdo()->exec('SET IDENTITY_INSERT [order] OFF');
             }
         }
 
