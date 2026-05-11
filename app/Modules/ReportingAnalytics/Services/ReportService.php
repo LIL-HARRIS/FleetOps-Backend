@@ -269,29 +269,37 @@ class ReportService
      * @param int $months  Number of past months to include (1–24)
      * @return array  ['months' => int, 'labels' => string[], 'data' => float[], 'currency' => 'EGP']
      */
-    public function getRevenueChart(int $months = 6): array
+    public function getRevenueChart(int $months = 3): array
     {
         $labels  = [];
         $revenue = [];
+        $loss    = [];
 
         for ($i = $months - 1; $i >= 0; $i--) {
             $month      = Carbon::now()->subMonths($i)->startOfMonth();
             $monthStart = $month->copy()->startOfMonth()->startOfDay();
             $monthEnd   = $month->copy()->endOfMonth()->endOfDay();
 
-            $total = DB::table('cash_ledger')
+            $totalRevenue = DB::table('cash_ledger')
                 ->where('payment_status', 'collected')
                 ->whereBetween('transaction_ts', [$monthStart, $monthEnd])
                 ->sum('amount_collected');
 
-            $labels[]  = $month->format('M Y');          // e.g. "Nov 2025"
-            $revenue[] = round((float) $total, 2);
+            $totalLoss = DB::table('cash_ledger')
+                ->whereIn('payment_status', ['failed', 'refunded'])
+                ->whereBetween('transaction_ts', [$monthStart, $monthEnd])
+                ->sum('amount_collected');
+
+            $labels[]  = $month->format('M Y');
+            $revenue[] = round((float) $totalRevenue, 2);
+            $loss[]    = round((float) $totalLoss, 2);
         }
 
         return [
             'months'   => $months,
             'labels'   => $labels,
-            'data'     => $revenue,
+            'revenue'  => $revenue,
+            'loss'     => $loss,
             'currency' => 'EGP',
         ];
     }
