@@ -91,11 +91,14 @@ class EmergencyDispatchController extends Controller
      *
      * Body: { incident_id: int, mechanic_id: int }
      */
-    public function dispatchMechanic(Request $request): JsonResponse
+    public function dispatchMechanic(Request $request, $incident_id): JsonResponse
     {
+        // Merge incident_id from URL into request for validation
+        $request->merge(['incident_id' => $incident_id]);
+
         $validated = $request->validate([
-            'incident_id' => 'required|integer|exists:incident_reports,id',
-            'mechanic_id' => 'required|integer|exists:users,id',
+            'incident_id' => 'required|integer|exists:incident_reports,incident_id',
+            'mechanic_id' => 'required|integer|exists:mechanics,mechanic_id',
         ]);
 
         try {
