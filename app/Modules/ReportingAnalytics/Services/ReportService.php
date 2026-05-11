@@ -343,7 +343,8 @@ class ReportService
         $routes = Route::with(['driver.user', 'stops.order'])
             ->where('status', 'Active')
             ->whereDate('scheduled_start_time', $date)
-            ->get();
+            ->get()
+            ->unique('driver_id');
 
         return $routes->map(function ($route) {
             $totalStops = $route->total_stops ?: $route->stops->count();
