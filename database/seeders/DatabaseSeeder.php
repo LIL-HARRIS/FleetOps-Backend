@@ -20,8 +20,10 @@ class DatabaseSeeder extends Seeder
             RouteSeeder::class,              // Tier 2: routes
             GpsPingSeeder::class,            // Tier 2: GPS trails for active/planned routes
             OrderSeeder::class,              // Tier 3: orders + parcels
+            RouteStopSeeder::class,          // Tier 3: route_stops (after routes & orders)
             CashLedgerSeeder::class,         // Tier 4: cash_ledger (after orders & drivers)
             FuelAuditLogSeeder::class,       // Tier 1: fuel_audit_logs
+            AlertSeeder::class,              // Tier 2: alerts / incidents
             IncidentReportSeeder::class,     // Tier 2: incident_reports
             NotificationPreferenceSeeder::class, // Notification preferences
             NotificationSeeder::class,           // Sample notifications
