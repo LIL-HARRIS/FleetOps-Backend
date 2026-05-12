@@ -119,7 +119,7 @@ class OrderSeeder extends Seeder
                 'Perishable'          => mt_rand(0, 1),
                 'Weight'              => mt_rand(1, 50),
                 'Volume'              => mt_rand(1, 5),
-                'LiveTrackingLink'    => 'https://fleetops.com/track/' . $orderId,
+                'LiveTrackingLink'    => 'http://127.0.0.1:3002/track/' . $orderId,
                 'DeliveryTimeWindow'  => mt_rand(1, 8),
                 'Longitude'           => round(mt_rand(31150000, 31320000) / 1000000, 6),
                 'Latitude'            => round(mt_rand(29950000, 30200000) / 1000000, 6),
