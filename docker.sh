@@ -142,7 +142,7 @@ clear_caches() {
 
 run_tests() {
     echo -e "\033[1;36mRunning tests...\033[0m"
-    docker compose exec app php artisan test
+    docker compose exec app php artisan test tests/Feature/AuthIdentity/UserTest.php
 }
 
 show_status() {

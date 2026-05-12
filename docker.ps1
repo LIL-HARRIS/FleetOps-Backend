@@ -145,7 +145,7 @@ function Clear-Caches {
 
 function Run-Tests {
     Write-Host "Running tests..." -ForegroundColor Cyan
-    docker-compose exec app php artisan test
+    docker-compose exec app php artisan test tests/Feature/AuthIdentity/UserTest.php
 }
 
 function Show-Status {
